@@ -1,0 +1,405 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Syne+Mono&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:var(--color-background-tertiary);--s:var(--color-background-primary);--s2:var(--color-background-secondary);
+  --tx:var(--color-text-primary);--mu:var(--color-text-secondary);--hi:var(--color-text-tertiary);
+  --bd:var(--color-border-tertiary);--bd2:var(--color-border-secondary);
+  --r:var(--border-radius-md);--rl:var(--border-radius-lg);--f:'Syne',sans-serif;--fm:'Syne Mono',monospace;
+  --c0:#3EC6A0;--c1:#5B9CF6;--c2:#F7786B;--c3:#F5C542;--c4:#B07FE8;--c5:#F0964B;
+  --c0l:rgba(62,198,160,.22);--c1l:rgba(91,156,246,.22);--c2l:rgba(247,120,107,.22);
+  --c3l:rgba(245,197,66,.22);--c4l:rgba(176,127,232,.22);--c5l:rgba(240,150,75,.22);
+}
+body{font-family:var(--f);background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 10px;background:var(--s);border-bottom:0.5px solid var(--bd);position:sticky;top:0;z-index:100}
+.nav-title{font-size:15px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.nav-title span{font-family:var(--fm);font-size:10px;color:var(--mu);display:block;font-weight:400;letter-spacing:1px;text-transform:uppercase}
+.nav-tabs{display:flex;gap:3px;background:var(--s2);border-radius:8px;padding:3px}
+.nav-tab{border:none;background:transparent;color:var(--mu);font-family:var(--f);font-size:11px;font-weight:600;padding:5px 10px;border-radius:6px;cursor:pointer;transition:all .15s;letter-spacing:.3px;text-transform:uppercase}
+.nav-tab.active{background:var(--s);color:var(--tx)}
+.screen{display:none;padding:14px 18px 88px}.screen.active{display:block}
+.date-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding:11px 14px;background:var(--s);border-radius:var(--rl);border:0.5px solid var(--bd)}
+.date-nav{background:none;border:none;cursor:pointer;color:var(--mu);font-size:19px;padding:0 4px;line-height:1}.date-nav:hover{color:var(--tx)}
+.date-str{font-size:13px;font-weight:600;letter-spacing:.2px}
+.wheel-wrap{display:flex;justify-content:center;margin:6px 0 18px}
+canvas{border-radius:50%}
+.toggle-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px}
+.toggle-card{background:var(--s);border:0.5px solid var(--bd);border-radius:var(--rl);padding:14px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:all .15s;user-select:none}
+.toggle-card.on{border-color:transparent}.toggle-card:active{transform:scale(.97)}
+.toggle-left{display:flex;align-items:center;gap:9px}
+.toggle-icon{width:11px;height:11px;border-radius:50%;flex-shrink:0;transition:all .2s}
+.toggle-label{font-size:13px;font-weight:600;line-height:1.2}
+.toggle-sub{font-size:10px;color:var(--mu);font-family:var(--fm);letter-spacing:.3px;margin-top:1px}
+.toggle-check{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--bd2);display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s;flex-shrink:0;background:transparent}
+.toggle-card.on .toggle-check{border-color:currentColor;background:currentColor}
+.toggle-card.on .toggle-check::after{content:'✓';color:white;font-size:12px;font-weight:700}
+.save-btn{width:100%;background:var(--tx);color:var(--s);border:none;border-radius:var(--rl);font-family:var(--f);font-size:13px;font-weight:700;padding:13px;cursor:pointer;transition:opacity .15s,transform .1s;letter-spacing:.5px;text-transform:uppercase}
+.save-btn:hover{opacity:.88}.save-btn:active{transform:scale(.98)}.save-btn.saved{background:#2da876}
+.week-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.week-label{font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.icon-btn{background:var(--s);border:0.5px solid var(--bd);border-radius:8px;padding:5px 9px;cursor:pointer;color:var(--mu);font-size:16px;line-height:1}
+.week-strip{display:flex;gap:5px;margin-bottom:16px;overflow-x:auto;padding-bottom:2px}
+.day-chip{flex-shrink:0;width:40px;border-radius:9px;padding:6px 0;text-align:center;cursor:pointer;border:0.5px solid var(--bd);background:var(--s);transition:all .15s}
+.day-chip.filled{border-color:var(--bd2)}.day-chip.today{outline:2px solid var(--c1);outline-offset:1px}
+.day-chip-n{font-size:10px;color:var(--mu);font-weight:600;letter-spacing:.3px}
+.day-chip-d{font-size:15px;font-weight:700}
+.day-pip{width:5px;height:5px;border-radius:50%;margin:2px auto 0;background:transparent}.day-pip.on{background:var(--c0)}
+.week-wheel-wrap{display:flex;justify-content:center;margin:0 0 16px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.stat-card{background:var(--s);border:0.5px solid var(--bd);border-radius:var(--rl);padding:12px 14px}
+.stat-l{font-size:10px;color:var(--mu);font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px}
+.stat-v{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-1px}
+.bar-section{margin-bottom:16px}
+.sec-label{font-size:10px;font-weight:700;color:var(--mu);letter-spacing:.7px;text-transform:uppercase;margin-bottom:10px}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.bar-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.bar-name{font-size:12px;font-weight:600;width:76px;flex-shrink:0;color:var(--mu)}
+.bar-track{flex:1;height:6px;background:var(--s2);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.bar-pct{font-size:12px;font-weight:700;width:34px;text-align:right;font-family:var(--fm)}
+.set-list{display:flex;flex-direction:column;gap:8px}
+.set-row{display:flex;align-items:center;gap:10px;background:var(--s);border:0.5px solid var(--bd);border-radius:var(--rl);padding:10px 12px}
+.set-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.set-input{flex:1;border:none;background:transparent;font-family:var(--f);font-size:13px;font-weight:600;color:var(--tx);outline:none}
+.set-input:focus{text-decoration:underline}
+.sync-panel{background:var(--s);border:0.5px solid var(--bd);border-radius:var(--rl);padding:16px;margin-bottom:12px}
+.sync-title{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px}
+.sync-sub{font-size:11px;color:var(--mu);margin-bottom:14px;line-height:1.5}
+.sync-code-wrap{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.sync-code{flex:1;font-family:var(--fm);font-size:12px;background:var(--s2);border:0.5px solid var(--bd);border-radius:var(--r);padding:9px 12px;color:var(--tx);word-break:break-all;line-height:1.4}
+.code-btn{border:0.5px solid var(--bd2);background:var(--s2);border-radius:var(--r);font-family:var(--f);font-size:11px;font-weight:600;padding:7px 11px;cursor:pointer;color:var(--tx);white-space:nowrap;transition:all .15s;text-transform:uppercase;letter-spacing:.3px}
+.code-btn:hover{background:var(--s)}
+.sync-input{width:100%;font-family:var(--fm);font-size:13px;background:var(--s2);border:0.5px solid var(--bd);border-radius:var(--r);padding:9px 12px;color:var(--tx);outline:none;letter-spacing:1px}
+.sync-input:focus{border-color:var(--bd2)}.sync-input::placeholder{color:var(--hi);letter-spacing:0}
+.sync-row{display:flex;gap:8px;margin-top:8px}
+.sync-btn{flex:1;background:var(--tx);color:var(--s);border:none;border-radius:var(--r);font-family:var(--f);font-size:11px;font-weight:700;padding:9px;cursor:pointer;letter-spacing:.5px;text-transform:uppercase;transition:opacity .15s}
+.sync-btn:hover{opacity:.85}.sync-btn.sec{background:transparent;border:0.5px solid var(--bd2);color:var(--mu)}
+.sync-status{font-size:11px;margin-top:8px;padding:8px 10px;border-radius:var(--r);font-family:var(--fm)}
+.sync-status.ok{background:rgba(45,168,118,.12);color:#2da876}
+.sync-status.err{background:rgba(247,120,107,.12);color:#c94f44}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--tx);color:var(--s);font-size:12px;font-weight:700;padding:8px 16px;border-radius:20px;opacity:0;transition:all .22s;pointer-events:none;white-space:nowrap;z-index:999;letter-spacing:.3px;text-transform:uppercase}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div>
+    <span class="nav-title">Rueda de la Vida<span>Registro de áreas vitales</span></span>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="go('hoy')">Hoy</button>
+    <button class="nav-tab" onclick="go('semana')">Semana</button>
+    <button class="nav-tab" onclick="go('areas')">Áreas</button>
+  </div>
+</div>
+
+<div class="screen active" id="screen-hoy">
+  <div class="date-bar">
+    <button class="date-nav" onclick="changeDay(-1)">‹</button>
+    <span class="date-str" id="date-str"></span>
+    <button class="date-nav" onclick="changeDay(1)">›</button>
+  </div>
+  <div class="wheel-wrap"><canvas id="wheel" width="260" height="260"></canvas></div>
+  <div class="toggle-grid" id="toggle-grid"></div>
+  <button class="save-btn" id="save-btn" onclick="saveDay()">Registrar día</button>
+</div>
+
+<div class="screen" id="screen-semana">
+  <div class="week-nav">
+    <span class="week-label">Semana</span>
+    <div style="display:flex;gap:6px">
+      <button class="icon-btn" onclick="changeWeek(-1)">‹</button>
+      <button class="icon-btn" onclick="changeWeek(1)">›</button>
+    </div>
+  </div>
+  <div class="week-strip" id="week-strip"></div>
+  <div class="week-wheel-wrap"><canvas id="wheel-week" width="240" height="240"></canvas></div>
+  <div class="stat-grid" id="stat-grid"></div>
+  <div class="bar-section" id="bar-section"></div>
+</div>
+
+<div class="screen" id="screen-areas">
+  <p class="sec-label" style="margin-bottom:10px">Personaliza tus 6 áreas</p>
+  <div class="set-list" id="set-list"></div>
+  <div style="height:1px;background:var(--bd);margin:20px 0"></div>
+  <div class="sync-panel">
+    <div class="sync-title">Sincronizar dispositivos</div>
+    <div class="sync-sub">Genera un código con todos tus datos y pégalo en otro dispositivo para sincronizar.</div>
+    <div style="font-size:10px;color:var(--mu);font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Tu código de exportación</div>
+    <div class="sync-code-wrap">
+      <div class="sync-code" id="export-code">—</div>
+      <button class="code-btn" onclick="copyExport()">Copiar</button>
+    </div>
+    <button class="code-btn" onclick="generateExport()" style="width:100%;margin-bottom:14px;padding:9px">Generar código</button>
+    <div style="height:0.5px;background:var(--bd);margin-bottom:14px"></div>
+    <div style="font-size:10px;color:var(--mu);font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Importar desde otro dispositivo</div>
+    <textarea class="sync-input" id="import-input" rows="3" placeholder="Pega aquí el código de exportación..."></textarea>
+    <div class="sync-row">
+      <button class="sync-btn" onclick="importData()">Importar datos</button>
+      <button class="sync-btn sec" onclick="document.getElementById('import-input').value=''">Limpiar</button>
+    </div>
+    <div id="sync-status" style="display:none" class="sync-status"></div>
+  </div>
+  <p style="font-size:11px;color:var(--hi);text-align:center;line-height:1.5">Los cambios de nombres se guardan al instante.<br>La sincronización no requiere internet.</p>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const COLORS=['#3EC6A0','#5B9CF6','#F7786B','#F5C542','#B07FE8','#F0964B'];
+const COLORS_L=['rgba(62,198,160,.22)','rgba(91,156,246,.22)','rgba(247,120,107,.22)','rgba(245,197,66,.22)','rgba(176,127,232,.22)','rgba(240,150,75,.22)'];
+
+let areas=JSON.parse(localStorage.getItem('rdv_areas')||'null')||['Salud','Familia','Trabajo','Ocio','Formación','Social'];
+let records=JSON.parse(localStorage.getItem('rdv_records')||'{}');
+let currentDate=todayStr();
+let weekOff=0;
+let draft={};
+
+function todayStr(){return new Date().toISOString().slice(0,10)}
+function dateKey(d){return d.toISOString().slice(0,10)}
+function addDays(str,n){const d=new Date(str+'T12:00:00');d.setDate(d.getDate()+n);return dateKey(d)}
+function persist(){localStorage.setItem('rdv_areas',JSON.stringify(areas));localStorage.setItem('rdv_records',JSON.stringify(records))}
+function formatDate(str){const d=new Date(str+'T12:00:00');const s=d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});return s.charAt(0).toUpperCase()+s.slice(1)}
+
+function go(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  const idx={hoy:0,semana:1,areas:2}[name];
+  document.querySelectorAll('.nav-tab')[idx]?.classList.add('active');
+  if(name==='semana')renderWeek();
+  if(name==='areas')renderSettings();
+}
+
+// ── WHEEL — sin etiquetas de texto ───────────────────────────────────────────
+function drawWheel(id, ratios, size, mode){
+  const canvas=document.getElementById(id);
+  if(!canvas)return;
+  const W=size||260;
+  canvas.width=W;canvas.height=W;
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,W,W);
+  const cx=W/2,cy=W/2,R=W/2-6;
+  const N=6,slice=(Math.PI*2)/N,off=-Math.PI/2;
+
+  // bg circle
+  ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);
+  ctx.strokeStyle='rgba(128,128,128,.12)';ctx.lineWidth=0.5;ctx.stroke();
+
+  // reference rings
+  const rings=mode==='continuous'?[.25,.5,.75,1]:[1];
+  rings.forEach(r=>{
+    ctx.beginPath();ctx.arc(cx,cy,R*r,0,Math.PI*2);
+    ctx.strokeStyle=r===1?'rgba(128,128,128,.12)':'rgba(128,128,128,.06)';
+    ctx.lineWidth=0.5;ctx.stroke();
+  });
+
+  // spokes
+  for(let i=0;i<N;i++){
+    const a=off+slice*i;
+    ctx.beginPath();ctx.moveTo(cx,cy);
+    ctx.lineTo(cx+Math.cos(a)*R,cy+Math.sin(a)*R);
+    ctx.strokeStyle='rgba(128,128,128,.1)';ctx.lineWidth=0.5;ctx.stroke();
+  }
+
+  // sector fills — each independent
+  for(let i=0;i<N;i++){
+    const a1=off+slice*i, a2=off+slice*(i+1);
+    const ratio=mode==='binary'?(ratios[i]>=0.5?1:0):ratios[i];
+    if(ratio<=0)continue;
+
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,R*ratio,a1,a2);
+    ctx.closePath();
+    ctx.fillStyle=COLORS_L[i];
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(cx,cy,R*ratio,a1,a2);
+    ctx.strokeStyle=COLORS[i];
+    ctx.lineWidth=mode==='binary'?3:2.5;
+    ctx.lineCap='round';
+    ctx.stroke();
+
+    // dot at midpoint
+    const aMid=a1+slice/2;
+    const pr=R*ratio*0.82;
+    ctx.beginPath();ctx.arc(cx+Math.cos(aMid)*pr,cy+Math.sin(aMid)*pr,5,0,Math.PI*2);
+    ctx.fillStyle=COLORS[i];ctx.fill();
+    ctx.strokeStyle='white';ctx.lineWidth=1.5;ctx.stroke();
+  }
+
+  // center dot
+  ctx.beginPath();ctx.arc(cx,cy,3,0,Math.PI*2);
+  ctx.fillStyle='rgba(128,128,128,.3)';ctx.fill();
+}
+
+// ── HOY ──────────────────────────────────────────────────────────────────────
+function renderHoy(){
+  document.getElementById('date-str').textContent=formatDate(currentDate);
+  if(records[currentDate]){records[currentDate].forEach((v,i)=>draft[i]=v)}
+  else{for(let i=0;i<6;i++)draft[i]=0}
+
+  drawWheel('wheel',Array.from({length:6},(_,i)=>draft[i]),260,'binary');
+
+  const grid=document.getElementById('toggle-grid');
+  grid.innerHTML='';
+  for(let i=0;i<6;i++){
+    const on=!!draft[i];
+    const card=document.createElement('div');
+    card.className='toggle-card'+(on?' on':'');
+    card.id='tc-'+i;card.style.color=COLORS[i];
+    card.innerHTML=`<div class="toggle-left">
+        <div class="toggle-icon" style="background:${on?COLORS[i]:'var(--bd2)'}"></div>
+        <div><div class="toggle-label">${areas[i]}</div>
+        <div class="toggle-sub">${on?'Hecho':'Sin registro'}</div></div>
+      </div><div class="toggle-check"></div>`;
+    card.onclick=()=>toggleArea(i);
+    grid.appendChild(card);
+  }
+  const btn=document.getElementById('save-btn');
+  if(records[currentDate]){btn.textContent='Actualizar registro';btn.classList.add('saved')}
+  else{btn.textContent='Registrar día';btn.classList.remove('saved')}
+}
+
+function toggleArea(i){
+  draft[i]=draft[i]?0:1;
+  const card=document.getElementById('tc-'+i);
+  const on=!!draft[i];
+  card.classList.toggle('on',on);
+  card.style.color=COLORS[i];
+  card.querySelector('.toggle-icon').style.background=on?COLORS[i]:'var(--bd2)';
+  card.querySelector('.toggle-sub').textContent=on?'Hecho':'Sin registro';
+  drawWheel('wheel',Array.from({length:6},(_,i)=>draft[i]),260,'binary');
+}
+
+function saveDay(){
+  records[currentDate]=Array.from({length:6},(_,i)=>draft[i]);
+  persist();renderHoy();showToast('Día registrado ✓');
+}
+function changeDay(n){currentDate=addDays(currentDate,n);renderHoy()}
+
+// ── SEMANA ───────────────────────────────────────────────────────────────────
+function getWeekStart(off){
+  const today=new Date(todayStr()+'T12:00:00');
+  const day=today.getDay();
+  const mon=new Date(today);
+  mon.setDate(today.getDate()-(day===0?6:day-1)+off*7);
+  return dateKey(mon);
+}
+
+function renderWeek(){
+  const ws=getWeekStart(weekOff);
+  const days=[];for(let i=0;i<7;i++)days.push(addDays(ws,i));
+  const dn=['L','M','X','J','V','S','D'];
+
+  const strip=document.getElementById('week-strip');
+  strip.innerHTML='';
+  days.forEach((d,i)=>{
+    const chip=document.createElement('div');
+    chip.className='day-chip'+(records[d]?' filled':'')+(d===todayStr()?' today':'');
+    chip.innerHTML=`<div class="day-chip-n">${dn[i]}</div>
+      <div class="day-chip-d">${d.slice(8)}</div>
+      <div class="day-pip${records[d]?' on':''}"></div>`;
+    chip.onclick=()=>{currentDate=d;go('hoy')};
+    strip.appendChild(chip);
+  });
+
+  const filled=days.filter(d=>records[d]);
+  const ratios=new Array(6).fill(0);
+  if(filled.length>0){
+    for(let i=0;i<6;i++){
+      const sum=filled.reduce((a,d)=>a+(records[d][i]||0),0);
+      ratios[i]=sum/filled.length;
+    }
+  }
+
+  drawWheel('wheel-week',ratios,240,'continuous');
+
+  const totalChecks=filled.reduce((a,d)=>a+records[d].reduce((s,v)=>s+v,0),0);
+  const maxPoss=filled.length*6;
+  const pct=maxPoss>0?Math.round(totalChecks/maxPoss*100):0;
+  const bestI=ratios.indexOf(Math.max(...ratios));
+  const worstI=ratios.indexOf(Math.min(...ratios));
+  document.getElementById('stat-grid').innerHTML=`
+    <div class="stat-card"><div class="stat-l">Días registrados</div><div class="stat-v">${filled.length}/7</div></div>
+    <div class="stat-card"><div class="stat-l">Presencia global</div><div class="stat-v">${pct}%</div></div>
+    <div class="stat-card"><div class="stat-l">Área más presente</div><div class="stat-v" style="font-size:14px;line-height:1.2">${filled.length?areas[bestI]:'—'}</div></div>
+    <div class="stat-card"><div class="stat-l">Área menos presente</div><div class="stat-v" style="font-size:14px;line-height:1.2">${filled.length?areas[worstI]:'—'}</div></div>`;
+
+  const bs=document.getElementById('bar-section');
+  bs.innerHTML='<div class="sec-label">Presencia por área (media semanal)</div>';
+  for(let i=0;i<6;i++){
+    const p=Math.round(ratios[i]*100);
+    bs.innerHTML+=`<div class="bar-row">
+      <div class="bar-dot" style="background:${COLORS[i]}"></div>
+      <div class="bar-name">${areas[i]}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${p}%;background:${COLORS[i]}"></div></div>
+      <div class="bar-pct" style="color:${COLORS[i]}">${p}%</div>
+    </div>`;
+  }
+}
+function changeWeek(n){weekOff+=n;renderWeek()}
+
+// ── SETTINGS ─────────────────────────────────────────────────────────────────
+function renderSettings(){
+  const list=document.getElementById('set-list');list.innerHTML='';
+  for(let i=0;i<6;i++){
+    const row=document.createElement('div');row.className='set-row';
+    row.innerHTML=`<div class="set-dot" style="background:${COLORS[i]}"></div>
+      <input class="set-input" value="${areas[i]}" maxlength="18" oninput="areas[${i}]=this.value;persist()">`;
+    list.appendChild(row);
+  }
+  generateExport();
+}
+
+// ── SYNC ─────────────────────────────────────────────────────────────────────
+function generateExport(){
+  const b64=btoa(unescape(encodeURIComponent(JSON.stringify({v:1,areas,records}))));
+  document.getElementById('export-code').textContent=b64;
+}
+function copyExport(){
+  const code=document.getElementById('export-code').textContent;
+  if(code==='—')return;
+  navigator.clipboard?.writeText(code).then(()=>showToast('Código copiado ✓')).catch(()=>{
+    const ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('Código copiado ✓');
+  });
+}
+function importData(){
+  const raw=document.getElementById('import-input').value.trim();
+  const status=document.getElementById('sync-status');
+  status.style.display='block';
+  if(!raw){status.className='sync-status err';status.textContent='⚠ Pega un código de exportación primero.';return}
+  try{
+    const data=JSON.parse(decodeURIComponent(escape(atob(raw))));
+    if(!data.areas||!data.records||data.v!==1)throw new Error();
+    if(data.areas.length===6)areas=data.areas;
+    records={...records,...data.records};
+    persist();renderSettings();renderHoy();
+    status.className='sync-status ok';
+    status.textContent='✓ Datos importados correctamente.';
+    document.getElementById('import-input').value='';
+    showToast('Sincronizado ✓');
+  }catch(e){
+    status.className='sync-status err';
+    status.textContent='✗ Código no válido. Copia el código completo.';
+  }
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+renderHoy();
+</script>
+</body>
+</html>
