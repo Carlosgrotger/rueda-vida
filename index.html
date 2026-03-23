@@ -1,21 +1,49 @@
+Index · HTML
+Copiar
 
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Rueda de la Vida">
+<title>Rueda de la Vida</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Syne+Mono&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+ 
+/* LIGHT MODE */
 :root{
-  --bg:var(--color-background-tertiary);--s:var(--color-background-primary);--s2:var(--color-background-secondary);
-  --tx:var(--color-text-primary);--mu:var(--color-text-secondary);--hi:var(--color-text-tertiary);
-  --bd:var(--color-border-tertiary);--bd2:var(--color-border-secondary);
-  --r:var(--border-radius-md);--rl:var(--border-radius-lg);--f:'Syne',sans-serif;--fm:'Syne Mono',monospace;
+  --bg:#F5F4F0;
+  --s:#FFFFFF;
+  --s2:#F0EEE9;
+  --tx:#1A1A18;
+  --mu:#73726C;
+  --hi:#AAAA9F;
+  --bd:rgba(0,0,0,0.1);
+  --bd2:rgba(0,0,0,0.22);
+  --r:8px;--rl:12px;--f:'Syne',sans-serif;--fm:'Syne Mono',monospace;
   --c0:#3EC6A0;--c1:#5B9CF6;--c2:#F7786B;--c3:#F5C542;--c4:#B07FE8;--c5:#F0964B;
   --c0l:rgba(62,198,160,.22);--c1l:rgba(91,156,246,.22);--c2l:rgba(247,120,107,.22);
   --c3l:rgba(245,197,66,.22);--c4l:rgba(176,127,232,.22);--c5l:rgba(240,150,75,.22);
 }
+ 
+/* DARK MODE */
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1A1A18;
+    --s:#252522;
+    --s2:#2E2E2B;
+    --tx:#E8E6DF;
+    --mu:#9C9A92;
+    --hi:#5A5A54;
+    --bd:rgba(255,255,255,0.1);
+    --bd2:rgba(255,255,255,0.22);
+  }
+}
+ 
 body{font-family:var(--f);background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
 .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 10px;background:var(--s);border-bottom:0.5px solid var(--bd);position:sticky;top:0;z-index:100}
 .nav-title{font-size:15px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
@@ -88,7 +116,7 @@ canvas{border-radius:50%}
 </style>
 </head>
 <body>
-
+ 
 <div class="nav">
   <div>
     <span class="nav-title">Rueda de la Vida<span>Registro de áreas vitales</span></span>
@@ -99,7 +127,7 @@ canvas{border-radius:50%}
     <button class="nav-tab" onclick="go('areas')">Áreas</button>
   </div>
 </div>
-
+ 
 <div class="screen active" id="screen-hoy">
   <div class="date-bar">
     <button class="date-nav" onclick="changeDay(-1)">‹</button>
@@ -110,7 +138,7 @@ canvas{border-radius:50%}
   <div class="toggle-grid" id="toggle-grid"></div>
   <button class="save-btn" id="save-btn" onclick="saveDay()">Registrar día</button>
 </div>
-
+ 
 <div class="screen" id="screen-semana">
   <div class="week-nav">
     <span class="week-label">Semana</span>
@@ -124,7 +152,7 @@ canvas{border-radius:50%}
   <div class="stat-grid" id="stat-grid"></div>
   <div class="bar-section" id="bar-section"></div>
 </div>
-
+ 
 <div class="screen" id="screen-areas">
   <p class="sec-label" style="margin-bottom:10px">Personaliza tus 6 áreas</p>
   <div class="set-list" id="set-list"></div>
@@ -149,25 +177,25 @@ canvas{border-radius:50%}
   </div>
   <p style="font-size:11px;color:var(--hi);text-align:center;line-height:1.5">Los cambios de nombres se guardan al instante.<br>La sincronización no requiere internet.</p>
 </div>
-
+ 
 <div class="toast" id="toast"></div>
-
+ 
 <script>
 const COLORS=['#3EC6A0','#5B9CF6','#F7786B','#F5C542','#B07FE8','#F0964B'];
 const COLORS_L=['rgba(62,198,160,.22)','rgba(91,156,246,.22)','rgba(247,120,107,.22)','rgba(245,197,66,.22)','rgba(176,127,232,.22)','rgba(240,150,75,.22)'];
-
+ 
 let areas=JSON.parse(localStorage.getItem('rdv_areas')||'null')||['Salud','Familia','Trabajo','Ocio','Formación','Social'];
 let records=JSON.parse(localStorage.getItem('rdv_records')||'{}');
 let currentDate=todayStr();
 let weekOff=0;
 let draft={};
-
+ 
 function todayStr(){return new Date().toISOString().slice(0,10)}
 function dateKey(d){return d.toISOString().slice(0,10)}
 function addDays(str,n){const d=new Date(str+'T12:00:00');d.setDate(d.getDate()+n);return dateKey(d)}
 function persist(){localStorage.setItem('rdv_areas',JSON.stringify(areas));localStorage.setItem('rdv_records',JSON.stringify(records))}
 function formatDate(str){const d=new Date(str+'T12:00:00');const s=d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});return s.charAt(0).toUpperCase()+s.slice(1)}
-
+ 
 function go(name){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
@@ -177,9 +205,8 @@ function go(name){
   if(name==='semana')renderWeek();
   if(name==='areas')renderSettings();
 }
-
-// ── WHEEL — sin etiquetas de texto ───────────────────────────────────────────
-function drawWheel(id, ratios, size, mode){
+ 
+function drawWheel(id,ratios,size,mode){
   const canvas=document.getElementById(id);
   if(!canvas)return;
   const W=size||260;
@@ -188,68 +215,55 @@ function drawWheel(id, ratios, size, mode){
   ctx.clearRect(0,0,W,W);
   const cx=W/2,cy=W/2,R=W/2-6;
   const N=6,slice=(Math.PI*2)/N,off=-Math.PI/2;
-
-  // bg circle
+  const isDark=window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const ringColor=isDark?'rgba(255,255,255,.1)':'rgba(0,0,0,.1)';
+  const ringColorFaint=isDark?'rgba(255,255,255,.05)':'rgba(0,0,0,.05)';
+ 
   ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);
-  ctx.strokeStyle='rgba(128,128,128,.12)';ctx.lineWidth=0.5;ctx.stroke();
-
-  // reference rings
+  ctx.strokeStyle=ringColor;ctx.lineWidth=0.5;ctx.stroke();
+ 
   const rings=mode==='continuous'?[.25,.5,.75,1]:[1];
   rings.forEach(r=>{
     ctx.beginPath();ctx.arc(cx,cy,R*r,0,Math.PI*2);
-    ctx.strokeStyle=r===1?'rgba(128,128,128,.12)':'rgba(128,128,128,.06)';
+    ctx.strokeStyle=r===1?ringColor:ringColorFaint;
     ctx.lineWidth=0.5;ctx.stroke();
   });
-
-  // spokes
+ 
   for(let i=0;i<N;i++){
     const a=off+slice*i;
     ctx.beginPath();ctx.moveTo(cx,cy);
     ctx.lineTo(cx+Math.cos(a)*R,cy+Math.sin(a)*R);
-    ctx.strokeStyle='rgba(128,128,128,.1)';ctx.lineWidth=0.5;ctx.stroke();
+    ctx.strokeStyle=isDark?'rgba(255,255,255,.08)':'rgba(0,0,0,.08)';
+    ctx.lineWidth=0.5;ctx.stroke();
   }
-
-  // sector fills — each independent
+ 
   for(let i=0;i<N;i++){
-    const a1=off+slice*i, a2=off+slice*(i+1);
+    const a1=off+slice*i,a2=off+slice*(i+1);
     const ratio=mode==='binary'?(ratios[i]>=0.5?1:0):ratios[i];
     if(ratio<=0)continue;
-
-    ctx.beginPath();
-    ctx.moveTo(cx,cy);
+    ctx.beginPath();ctx.moveTo(cx,cy);
     ctx.arc(cx,cy,R*ratio,a1,a2);
     ctx.closePath();
-    ctx.fillStyle=COLORS_L[i];
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(cx,cy,R*ratio,a1,a2);
+    ctx.fillStyle=COLORS_L[i];ctx.fill();
+    ctx.beginPath();ctx.arc(cx,cy,R*ratio,a1,a2);
     ctx.strokeStyle=COLORS[i];
     ctx.lineWidth=mode==='binary'?3:2.5;
-    ctx.lineCap='round';
-    ctx.stroke();
-
-    // dot at midpoint
+    ctx.lineCap='round';ctx.stroke();
     const aMid=a1+slice/2;
     const pr=R*ratio*0.82;
     ctx.beginPath();ctx.arc(cx+Math.cos(aMid)*pr,cy+Math.sin(aMid)*pr,5,0,Math.PI*2);
     ctx.fillStyle=COLORS[i];ctx.fill();
     ctx.strokeStyle='white';ctx.lineWidth=1.5;ctx.stroke();
   }
-
-  // center dot
   ctx.beginPath();ctx.arc(cx,cy,3,0,Math.PI*2);
-  ctx.fillStyle='rgba(128,128,128,.3)';ctx.fill();
+  ctx.fillStyle=isDark?'rgba(255,255,255,.25)':'rgba(0,0,0,.2)';ctx.fill();
 }
-
-// ── HOY ──────────────────────────────────────────────────────────────────────
+ 
 function renderHoy(){
   document.getElementById('date-str').textContent=formatDate(currentDate);
   if(records[currentDate]){records[currentDate].forEach((v,i)=>draft[i]=v)}
   else{for(let i=0;i<6;i++)draft[i]=0}
-
   drawWheel('wheel',Array.from({length:6},(_,i)=>draft[i]),260,'binary');
-
   const grid=document.getElementById('toggle-grid');
   grid.innerHTML='';
   for(let i=0;i<6;i++){
@@ -269,7 +283,7 @@ function renderHoy(){
   if(records[currentDate]){btn.textContent='Actualizar registro';btn.classList.add('saved')}
   else{btn.textContent='Registrar día';btn.classList.remove('saved')}
 }
-
+ 
 function toggleArea(i){
   draft[i]=draft[i]?0:1;
   const card=document.getElementById('tc-'+i);
@@ -280,14 +294,13 @@ function toggleArea(i){
   card.querySelector('.toggle-sub').textContent=on?'Hecho':'Sin registro';
   drawWheel('wheel',Array.from({length:6},(_,i)=>draft[i]),260,'binary');
 }
-
+ 
 function saveDay(){
   records[currentDate]=Array.from({length:6},(_,i)=>draft[i]);
   persist();renderHoy();showToast('Día registrado ✓');
 }
 function changeDay(n){currentDate=addDays(currentDate,n);renderHoy()}
-
-// ── SEMANA ───────────────────────────────────────────────────────────────────
+ 
 function getWeekStart(off){
   const today=new Date(todayStr()+'T12:00:00');
   const day=today.getDay();
@@ -295,12 +308,11 @@ function getWeekStart(off){
   mon.setDate(today.getDate()-(day===0?6:day-1)+off*7);
   return dateKey(mon);
 }
-
+ 
 function renderWeek(){
   const ws=getWeekStart(weekOff);
   const days=[];for(let i=0;i<7;i++)days.push(addDays(ws,i));
   const dn=['L','M','X','J','V','S','D'];
-
   const strip=document.getElementById('week-strip');
   strip.innerHTML='';
   days.forEach((d,i)=>{
@@ -312,7 +324,6 @@ function renderWeek(){
     chip.onclick=()=>{currentDate=d;go('hoy')};
     strip.appendChild(chip);
   });
-
   const filled=days.filter(d=>records[d]);
   const ratios=new Array(6).fill(0);
   if(filled.length>0){
@@ -321,9 +332,7 @@ function renderWeek(){
       ratios[i]=sum/filled.length;
     }
   }
-
   drawWheel('wheel-week',ratios,240,'continuous');
-
   const totalChecks=filled.reduce((a,d)=>a+records[d].reduce((s,v)=>s+v,0),0);
   const maxPoss=filled.length*6;
   const pct=maxPoss>0?Math.round(totalChecks/maxPoss*100):0;
@@ -334,7 +343,6 @@ function renderWeek(){
     <div class="stat-card"><div class="stat-l">Presencia global</div><div class="stat-v">${pct}%</div></div>
     <div class="stat-card"><div class="stat-l">Área más presente</div><div class="stat-v" style="font-size:14px;line-height:1.2">${filled.length?areas[bestI]:'—'}</div></div>
     <div class="stat-card"><div class="stat-l">Área menos presente</div><div class="stat-v" style="font-size:14px;line-height:1.2">${filled.length?areas[worstI]:'—'}</div></div>`;
-
   const bs=document.getElementById('bar-section');
   bs.innerHTML='<div class="sec-label">Presencia por área (media semanal)</div>';
   for(let i=0;i<6;i++){
@@ -348,8 +356,7 @@ function renderWeek(){
   }
 }
 function changeWeek(n){weekOff+=n;renderWeek()}
-
-// ── SETTINGS ─────────────────────────────────────────────────────────────────
+ 
 function renderSettings(){
   const list=document.getElementById('set-list');list.innerHTML='';
   for(let i=0;i<6;i++){
@@ -360,8 +367,7 @@ function renderSettings(){
   }
   generateExport();
 }
-
-// ── SYNC ─────────────────────────────────────────────────────────────────────
+ 
 function generateExport(){
   const b64=btoa(unescape(encodeURIComponent(JSON.stringify({v:1,areas,records}))));
   document.getElementById('export-code').textContent=b64;
@@ -393,12 +399,18 @@ function importData(){
     status.textContent='✗ Código no válido. Copia el código completo.';
   }
 }
-
+ 
 function showToast(msg){
   const t=document.getElementById('toast');t.textContent=msg;
   t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);
 }
-
+ 
+// Redraw wheels on system theme change
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{
+  renderHoy();
+  if(document.getElementById('screen-semana').classList.contains('active'))renderWeek();
+});
+ 
 renderHoy();
 </script>
 </body>
